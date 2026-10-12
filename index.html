@@ -1,0 +1,392 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#5b4bdb">
+<title>Student Records</title>
+<style>
+:root {
+  --bg:#eef2fb; --card:#ffffff; --ink:#1b2340; --muted:#667090; --line:#e1e6f5;
+  --brand:#5b4bdb; --brand-d:#4636b8; --brand-l:#ece9ff;
+  --accent:#00b3a4; --pink:#ff5d8f;
+  --ok:#0e7a4b; --ok-bg:#dff7ea; --bad:#c0263b; --bad-bg:#ffe6ea; --warn:#a15c00; --warn-bg:#fff2d9;
+}
+* { box-sizing:border-box; }
+body { margin:0; font:16px/1.5 "Segoe UI",system-ui,-apple-system,Roboto,sans-serif; color:var(--ink); min-height:100vh; position:relative;
+  background:
+    radial-gradient(900px 500px at 8% 35%, rgba(122,75,224,.16), transparent 60%),
+    radial-gradient(800px 500px at 95% 55%, rgba(0,179,164,.16), transparent 60%),
+    radial-gradient(700px 450px at 50% 105%, rgba(255,93,143,.14), transparent 60%),
+    linear-gradient(180deg,#f3f5ff 0%,#e9eefc 50%,#eaf7f6 100%);
+  background-attachment:fixed; }
+body::before { content:""; position:fixed; inset:0; z-index:-1; pointer-events:none;
+  background-image:radial-gradient(rgba(91,75,219,.16) 1.2px, transparent 1.2px); background-size:26px 26px;
+  -webkit-mask-image:linear-gradient(180deg,transparent 15%,#000 60%,transparent 100%); mask-image:linear-gradient(180deg,transparent 15%,#000 60%,transparent 100%); }
+
+/* Header */
+.top { position:relative; overflow:hidden; color:#fff; padding:30px 20px 92px;
+  background:
+    radial-gradient(500px 260px at 90% 0%, rgba(255,255,255,.22), transparent 65%),
+    radial-gradient(420px 260px at 0% 100%, rgba(255,93,143,.45), transparent 65%),
+    linear-gradient(120deg,#4636b8 0%,#6a46dc 45%,#00a3b8 115%); }
+.top::before { content:""; position:absolute; width:340px; height:340px; right:-90px; top:-150px; border-radius:50%; border:42px solid rgba(255,255,255,.10); }
+.top::after { content:""; position:absolute; width:150px; height:150px; left:38%; bottom:-70px; border-radius:36px; transform:rotate(25deg);
+  background:linear-gradient(135deg,rgba(255,255,255,.18),rgba(255,255,255,0)); }
+.wave { position:absolute; left:0; right:0; bottom:-1px; width:100%; height:56px; display:block; }
+.wave path { fill:#f1f4fd; opacity:.9; }
+.top-inner { position:relative; z-index:1; max-width:960px; margin:0 auto; display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+.logo { width:48px; height:48px; border-radius:14px; background:rgba(255,255,255,.2); display:grid; place-items:center; font-size:1.6rem; border:1px solid rgba(255,255,255,.35); }
+.top h1 { margin:0; font-size:1.5rem; letter-spacing:.2px; }
+.top p { margin:0; opacity:.85; font-size:.95rem; }
+.stats { margin-left:auto; display:flex; gap:10px; }
+.chip { background:rgba(255,255,255,.18); border:1px solid rgba(255,255,255,.35); padding:6px 14px; border-radius:999px; font-weight:600; font-size:.9rem; }
+.chip b { font-size:1.1rem; margin-right:4px; }
+
+main { position:relative; z-index:1; max-width:960px; margin:-52px auto 40px; padding:0 16px; display:grid; gap:20px; }
+.card { background:rgba(255,255,255,.88); -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,.9); border-radius:18px; padding:22px;
+  box-shadow:0 1px 0 rgba(255,255,255,.8) inset, 0 12px 36px rgba(60,50,150,.14), 0 2px 6px rgba(60,50,150,.06); }
+.card.form { border-top:5px solid var(--brand); }
+.card.list { border-top:5px solid var(--accent); }
+h2 { margin:0 0 14px; font-size:1.15rem; }
+
+/* Form */
+.grid { display:grid; grid-template-columns:1fr 1.4fr 1.4fr; gap:14px; }
+.field { margin-bottom:6px; }
+label { display:block; font-weight:600; font-size:.9rem; margin-bottom:5px; color:#39426a; }
+.req { color:var(--pink); }
+input[type=text] { width:100%; padding:11px 13px; font:inherit; color:var(--ink); background:#f8f9ff;
+  border:1.5px solid var(--line); border-radius:10px; transition:border-color .15s, box-shadow .15s, background .15s; }
+input[type=text]:hover { border-color:#c9cff0; }
+input[type=text]:focus { outline:none; border-color:var(--brand); background:#fff; box-shadow:0 0 0 4px var(--brand-l); }
+input.invalid { border-color:var(--bad); background:#fff6f7; }
+.err { color:var(--bad); display:block; min-height:1.2em; font-size:.85rem; }
+.actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:6px; }
+.btn { font:inherit; font-weight:600; padding:10px 18px; border-radius:10px; border:1.5px solid var(--line); background:#fff; color:var(--ink);
+  cursor:pointer; transition:transform .08s, box-shadow .15s, background .15s; }
+.btn:hover { background:#f4f5ff; box-shadow:0 2px 8px rgba(60,50,150,.12); }
+.btn:active { transform:translateY(1px); }
+.btn:focus-visible, .tab:focus-visible { outline:3px solid #b7adff; outline-offset:2px; }
+.btn.primary { background:linear-gradient(135deg,var(--brand),#7a4be0); border-color:transparent; color:#fff; box-shadow:0 4px 12px rgba(91,75,219,.35); }
+.btn.primary:hover { background:linear-gradient(135deg,var(--brand-d),#6a3cd0); }
+.btn.small { padding:6px 12px; font-size:.88rem; border-radius:8px; }
+.btn.edit { color:var(--brand); background:var(--brand-l); border-color:transparent; }
+.btn.edit:hover { background:#dcd7ff; }
+.btn.warn { color:var(--warn); background:var(--warn-bg); border-color:transparent; }
+.btn.warn:hover { background:#ffe7b8; }
+.btn.restore { color:var(--ok); background:var(--ok-bg); border-color:transparent; }
+
+/* Messages */
+.message { padding:13px 16px; border-radius:12px; font-weight:600; display:flex; align-items:center; gap:10px; border-left:6px solid; animation:pop .25s ease; }
+.message[hidden] { display:none; }
+.message.success { background:var(--ok-bg); color:var(--ok); border-color:#22b573; }
+.message.success::before { content:"\2714"; }
+.message.error { background:var(--bad-bg); color:var(--bad); border-color:var(--bad); }
+.message.error::before { content:"\26A0"; }
+@keyframes pop { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:none; } }
+
+/* List */
+.list-head { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:10px; }
+.list-head h2 { margin:0; }
+.tabs { display:flex; gap:4px; background:#f0f2fb; padding:4px; border-radius:999px; }
+.tab { font:inherit; font-weight:600; font-size:.9rem; padding:7px 16px; border:0; background:transparent; color:var(--muted); border-radius:999px; cursor:pointer; }
+.tab.active { background:#fff; color:var(--brand); box-shadow:0 2px 8px rgba(60,50,150,.15); }
+.tab[data-view="ARCHIVED"].active { color:var(--warn); }
+.table-wrap { overflow-x:auto; }
+table { width:100%; border-collapse:separate; border-spacing:0; }
+th { text-align:left; padding:10px; font-size:.75rem; color:var(--muted); text-transform:uppercase; letter-spacing:.07em; border-bottom:2px solid var(--line); }
+td { padding:12px 10px; border-bottom:1px solid var(--line); vertical-align:middle; }
+tbody tr:hover { background:#f7f8ff; }
+td.col-actions, th.col-actions { white-space:nowrap; text-align:right; }
+.who { display:flex; align-items:center; gap:12px; }
+.avatar { width:38px; height:38px; border-radius:50%; display:grid; place-items:center; color:#fff; font-weight:700; font-size:.9rem; flex:none; }
+.sid { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:.9rem; background:#f0f2fb; padding:3px 8px; border-radius:6px; }
+.pill { display:inline-block; padding:3px 12px; border-radius:999px; font-size:.85rem; font-weight:600; background:var(--brand-l); color:var(--brand-d); }
+.pill.archived { background:var(--warn-bg); color:var(--warn); }
+.empty { color:var(--muted); text-align:center; padding:26px 0 8px; margin:0; }
+.empty[hidden] { display:none; }
+.empty::before { content:"\1F4ED"; display:block; font-size:2rem; margin-bottom:4px; }
+footer { position:relative; z-index:1; text-align:center; color:var(--muted); font-size:.85rem; padding:6px 16px 28px; }
+footer::before { content:""; display:block; width:60px; height:4px; margin:0 auto 12px; border-radius:4px; background:linear-gradient(90deg,var(--brand),var(--accent),var(--pink)); }
+
+@media (max-width:760px) { .grid { grid-template-columns:1fr; gap:6px; } .stats { margin-left:0; } }
+@media (max-width:640px) {
+  .top { padding:22px 16px 74px; } .top::before { width:220px; height:220px; border-width:30px; } .wave { height:36px; }
+  main { padding:0 10px; } .card { padding:16px; }
+  thead { display:none; }
+  table, tbody, tr, td { display:block; width:100%; }
+  tr { border:1px solid var(--line); border-left:5px solid var(--accent); border-radius:12px; margin-bottom:12px; padding:8px 12px; background:#fff; }
+  td { border:0; padding:4px 0; }
+  td[data-label]::before { content:attr(data-label) ": "; font-weight:600; color:var(--muted); font-size:.85rem; }
+  td.col-name::before { display:none; }
+  td.col-actions { text-align:left; padding-top:10px; display:flex; gap:8px; }
+  td.col-actions .btn { flex:1; }
+  .actions .btn { flex:1; }
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-inner">
+    <div class="logo" aria-hidden="true">🎓</div>
+    <div>
+      <h1>Student Records</h1>
+      <p>Add, update and archive student information</p>
+    </div>
+    <div class="stats" aria-live="polite">
+      <span class="chip"><b id="count-active">0</b>Active</span>
+      <span class="chip"><b id="count-archived">0</b>Archived</span>
+    </div>
+  </div>
+  <svg class="wave" viewBox="0 0 1440 80" preserveAspectRatio="none" aria-hidden="true"><path d="M0,40 C240,90 480,0 720,36 C960,72 1200,10 1440,44 L1440,80 L0,80 Z"/></svg>
+</header>
+
+<main>
+  <div id="message" class="message" role="status" aria-live="polite" hidden></div>
+
+  <section class="card form" aria-labelledby="form-title">
+    <h2 id="form-title">Add Student</h2>
+    <form id="student-form" novalidate>
+      <input type="hidden" id="record-id">
+      <div class="grid">
+        <div class="field">
+          <label for="student_id">Student ID <span class="req">*</span></label>
+          <input id="student_id" type="text" placeholder="e.g. 2026-001" autocomplete="off" required>
+          <small class="err" id="err-student_id"></small>
+        </div>
+        <div class="field">
+          <label for="name">Full Name <span class="req">*</span></label>
+          <input id="name" type="text" placeholder="e.g. Juan Dela Cruz" autocomplete="off" required>
+          <small class="err" id="err-name"></small>
+        </div>
+        <div class="field">
+          <label for="program">Program <span class="req">*</span></label>
+          <input id="program" type="text" placeholder="e.g. BS Information Technology" autocomplete="off" required>
+          <small class="err" id="err-program"></small>
+        </div>
+      </div>
+      <div class="actions">
+        <button type="submit" id="save-btn" class="btn primary">Add Student</button>
+        <button type="button" id="cancel-btn" class="btn" hidden>Cancel Edit</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="card list" aria-labelledby="list-title">
+    <div class="list-head">
+      <h2 id="list-title">Active Students</h2>
+      <div class="tabs" role="tablist">
+        <button class="tab active" data-view="ACTIVE" role="tab">Active</button>
+        <button class="tab" data-view="ARCHIVED" role="tab">Archived</button>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Student</th><th>Student ID</th><th>Program</th><th class="col-actions">Actions</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+    <p id="empty" class="empty" hidden>No records to show.</p>
+  </section>
+</main>
+
+<footer>Archived records are never deleted. They stay saved in the database (this browser's storage).</footer>
+
+<script>
+/* ============================================================
+   DATA FLOW:  User -> Web Form -> Controller -> Database -> Result -> User
+   - Web Form   : the <form> above + the event handlers at the bottom
+   - Controller : the "controller" object (validates, then acts)
+   - Database   : browser localStorage, key "student_records_db"
+   - Result     : { ok, message, errors } shown as a message + redrawn list
+   ============================================================ */
+
+// ---------- DATABASE (localStorage) ----------
+const DB_KEY = 'student_records_db';
+const db = {
+  all() {
+    try { return JSON.parse(localStorage.getItem(DB_KEY)) || []; } catch (e) { return []; }
+  },
+  save(rows) {
+    try { localStorage.setItem(DB_KEY, JSON.stringify(rows)); return true; } catch (e) { return false; }
+  },
+};
+
+// ---------- CONTROLLER ----------
+function validate(body) {
+  const errors = {};
+  const sid = String(body.student_id || '').trim();
+  const name = String(body.name || '').trim();
+  const program = String(body.program || '').trim();
+  if (!sid) errors.student_id = 'Student ID is required.';
+  else if (!/^[A-Za-z0-9-]{3,20}$/.test(sid)) errors.student_id = 'Student ID must be 3-20 letters, numbers or dashes.';
+  if (!name) errors.name = 'Name is required.';
+  else if (name.length < 2) errors.name = 'Name must be at least 2 characters.';
+  if (!program) errors.program = 'Program is required.';
+  return { errors, data: { student_id: sid, name, program } };
+}
+const fail = (message, errors) => ({ ok: false, message, errors: errors || {} });
+const STORAGE_ERR = fail('Could not save. Browser storage is blocked or full.');
+
+const controller = {
+  list(status) {
+    return db.all().filter((s) => s.status === status).sort((a, b) => b.id - a.id);
+  },
+  create(body) {
+    const { errors, data } = validate(body);
+    if (Object.keys(errors).length) return fail('Please fix the highlighted fields.', errors);
+    const rows = db.all();
+    if (rows.some((s) => s.student_id.toLowerCase() === data.student_id.toLowerCase()))
+      return fail('That Student ID already exists.', { student_id: 'Student ID already exists.' });
+    const id = rows.reduce((m, s) => Math.max(m, s.id), 0) + 1;
+    rows.push({ id, ...data, status: 'ACTIVE', created_at: new Date().toISOString() });
+    if (!db.save(rows)) return STORAGE_ERR;
+    return { ok: true, message: `Student "${data.name}" was added successfully.` };
+  },
+  update(id, body) {
+    const { errors, data } = validate(body);
+    if (Object.keys(errors).length) return fail('Please fix the highlighted fields.', errors);
+    const rows = db.all();
+    const row = rows.find((s) => s.id === id && s.status === 'ACTIVE');
+    if (!row) return fail('Active student record not found.');
+    if (rows.some((s) => s.id !== id && s.student_id.toLowerCase() === data.student_id.toLowerCase()))
+      return fail('That Student ID already exists.', { student_id: 'Student ID already exists.' });
+    Object.assign(row, data);
+    if (!db.save(rows)) return STORAGE_ERR;
+    return { ok: true, message: 'Student record updated successfully.' };
+  },
+  // Archive = soft delete: the record stays in the database with status ARCHIVED.
+  archive(id) {
+    const rows = db.all();
+    const row = rows.find((s) => s.id === id && s.status === 'ACTIVE');
+    if (!row) return fail('Active student record not found.');
+    row.status = 'ARCHIVED';
+    if (!db.save(rows)) return STORAGE_ERR;
+    return { ok: true, message: 'Student archived. The record is kept in the database.' };
+  },
+  restore(id) {
+    const rows = db.all();
+    const row = rows.find((s) => s.id === id && s.status === 'ARCHIVED');
+    if (!row) return fail('Archived student record not found.');
+    row.status = 'ACTIVE';
+    if (!db.save(rows)) return STORAGE_ERR;
+    return { ok: true, message: 'Student restored to the active list.' };
+  },
+};
+
+// ---------- WEB FORM / UI ----------
+const $ = (id) => document.getElementById(id);
+const form = $('student-form');
+const fields = ['student_id', 'name', 'program'];
+let view = 'ACTIVE';
+let students = [];
+
+function showMessage(text, type) {
+  const el = $('message');
+  el.textContent = text;
+  el.className = 'message ' + (type || 'success');
+  el.hidden = false;
+  clearTimeout(showMessage.t);
+  showMessage.t = setTimeout(() => (el.hidden = true), 5000);
+}
+function clearErrors() {
+  fields.forEach((f) => { $('err-' + f).textContent = ''; $(f).classList.remove('invalid'); });
+}
+function showErrors(errors) {
+  Object.keys(errors || {}).forEach((f) => { $('err-' + f).textContent = errors[f]; $(f).classList.add('invalid'); });
+}
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+function initials(name) {
+  const p = name.trim().split(/\s+/);
+  return esc(((p[0] || '')[0] || '?') + (p.length > 1 ? p[p.length - 1][0] : '')).toUpperCase();
+}
+const PALETTE = ['#5b4bdb', '#00b3a4', '#ff5d8f', '#f59e0b', '#3b82f6', '#8b5cf6', '#10b981', '#ef4444'];
+function color(name) {
+  let h = 0;
+  for (const c of name) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+  return PALETTE[h % PALETTE.length];
+}
+
+function load() {
+  students = controller.list(view);
+  $('list-title').textContent = view === 'ACTIVE' ? 'Active Students' : 'Archived Students';
+  $('rows').innerHTML = students.map((s) => `
+    <tr>
+      <td class="col-name" data-label="Name">
+        <div class="who"><span class="avatar" style="background:${color(s.name)}">${initials(s.name)}</span><strong>${esc(s.name)}</strong></div>
+      </td>
+      <td data-label="Student ID"><span class="sid">${esc(s.student_id)}</span></td>
+      <td data-label="Program"><span class="pill ${view === 'ARCHIVED' ? 'archived' : ''}">${esc(s.program)}</span></td>
+      <td class="col-actions">
+        ${view === 'ACTIVE'
+          ? `<button class="btn small edit" data-act="edit" data-id="${s.id}">Edit</button>
+             <button class="btn small warn" data-act="archive" data-id="${s.id}">Archive</button>`
+          : `<button class="btn small restore" data-act="restore" data-id="${s.id}">Restore</button>`}
+      </td>
+    </tr>`).join('');
+  $('empty').hidden = students.length > 0;
+  $('empty').textContent = view === 'ACTIVE' ? 'No active students yet. Add one above.' : 'No archived students.';
+  $('count-active').textContent = controller.list('ACTIVE').length;
+  $('count-archived').textContent = controller.list('ARCHIVED').length;
+}
+
+function resetForm() {
+  form.reset(); $('record-id').value = ''; clearErrors();
+  $('form-title').textContent = 'Add Student';
+  $('save-btn').textContent = 'Add Student';
+  $('cancel-btn').hidden = true;
+}
+
+form.addEventListener('submit', (e) => {
+  e.preventDefault();
+  clearErrors();
+  const body = { student_id: $('student_id').value, name: $('name').value, program: $('program').value };
+  const id = $('record-id').value;
+  const result = id ? controller.update(Number(id), body) : controller.create(body);
+  if (!result.ok) { showErrors(result.errors); return showMessage(result.message, 'error'); }
+  showMessage(result.message, 'success');
+  resetForm();
+  load();
+});
+
+$('cancel-btn').addEventListener('click', resetForm);
+
+$('rows').addEventListener('click', (e) => {
+  const btn = e.target.closest('button[data-act]');
+  if (!btn) return;
+  const id = Number(btn.dataset.id);
+  const s = students.find((x) => x.id === id);
+  if (btn.dataset.act === 'edit') {
+    clearErrors();
+    $('record-id').value = s.id;
+    $('student_id').value = s.student_id; $('name').value = s.name; $('program').value = s.program;
+    $('form-title').textContent = 'Edit Student';
+    $('save-btn').textContent = 'Save Changes';
+    $('cancel-btn').hidden = false;
+    form.scrollIntoView({ behavior: 'smooth' }); $('name').focus();
+  } else if (btn.dataset.act === 'archive') {
+    if (!confirm('Archive ' + s.name + '? The record will be hidden from the active list but kept in the database.')) return;
+    const r = controller.archive(id);
+    showMessage(r.message, r.ok ? 'success' : 'error');
+    if (Number($('record-id').value) === id) resetForm();
+    load();
+  } else if (btn.dataset.act === 'restore') {
+    const r = controller.restore(id);
+    showMessage(r.message, r.ok ? 'success' : 'error');
+    load();
+  }
+});
+
+document.querySelectorAll('.tab').forEach((t) => t.addEventListener('click', () => {
+  document.querySelectorAll('.tab').forEach((x) => x.classList.toggle('active', x === t));
+  view = t.dataset.view; load();
+}));
+
+load();
+</script>
+</body>
+</html>
